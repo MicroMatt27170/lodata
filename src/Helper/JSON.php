@@ -31,6 +31,15 @@ final class JSON
      */
     public static function encode($value): string
     {
+        $type = gettype($value);
+        // @MicroMatt27170 Check if $value is binary
+
+        if (gettype($value) === 'string' && mb_detect_encoding($value, ['ASCII', 'UTF-8'], true) === false) {
+            $val = base64_encode($value);
+
+            return json_encode($val, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);;
+        }
+
         return json_encode($value, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     }
 }

@@ -302,6 +302,8 @@ abstract class EntitySet implements EntityTypeInterface, ReferenceInterface, Ide
             $transaction = $this->transaction->replaceQueryParams($transaction);
         }
 
+        header('Access-Control-Allow-Origin: *');
+        $method = $transaction->getMethod();
         switch ($transaction->getMethod()) {
             case Request::METHOD_GET:
                 if (!$this instanceof QueryInterface) {
@@ -352,6 +354,21 @@ abstract class EntitySet implements EntityTypeInterface, ReferenceInterface, Ide
                 $transaction->getResponse()->headers->add(['Location' => $entity->getResourceUrl($transaction)]);
 
                 return $entity->get($transaction, $context);
+            case Request::METHOD_OPTIONS:
+                // SET STATUS CODE TO 204 AND SET ALLOW HEADER TO THE ALLOWED METHODS
+                // Use native php header function to set the header
+                header('Allow: GET, POST, OPTIONS');
+                header('Content-Length: 0');
+                header('Content-Type: application/json');
+                header('OData-Version: 4.0');
+                header('Accept: application/json');
+                header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+                header('Access-Control-Allow-Headers: Content-Type, Authorization');
+                header('Access-Control-Allow-Credentials: true');
+                header('Access-Control-Max-Age: 86400');
+
+                die(204);
+                return $transaction->getResponse();
         }
 
         throw new MethodNotAllowedException();
